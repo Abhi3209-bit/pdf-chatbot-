@@ -18,9 +18,17 @@ load_css()
 # Initialize Gemini
 # -------------------------------
 
+api_key = st.secrets("GOOGLE_API_KEY")
+
+if not api_key:
+    st.error(
+        "Google API key not found. Please set the GOOGLE_API_KEY environment variable."
+    )
+    st.stop()
+
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
-    google_api_key=os.getenv("GOOGLE_API_KEY")
+    google_api_key=api_key
 )
 
 
