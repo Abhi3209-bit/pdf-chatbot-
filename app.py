@@ -76,7 +76,7 @@ with col1:
    st.metric(
       label="📑Pages",
       value="766"
-   )
+   ) 
 with col2:
    st.metric(
       label="🧩Chunks",
