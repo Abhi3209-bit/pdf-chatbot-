@@ -5,14 +5,8 @@ import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
 from retriever import retrieve_documents
 
-
-
-
 from dotenv import load_dotenv
 load_dotenv()
-
-
-
 
 def load_css():
     with open("styles.css") as f:
