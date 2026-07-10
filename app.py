@@ -1,5 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
 
 import os
 import streamlit as st
@@ -7,19 +5,32 @@ import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
 from retriever import retrieve_documents
 
+
+
+
+from dotenv import load_dotenv
+load_dotenv()
+
+
+
+
 def load_css():
     with open("styles.css") as f:
-        st.markdown(
-           f"<style>{f.read()}</style>",
-             unsafe_allow_html=True)
-        
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-        load_css()
+
+st.set_page_config(
+    page_title="FANUC AI Assistant",
+    page_icon="🤖",
+    layout="wide",
+)
+load_css()
+
 # -------------------------------
 # Initialize Gemini
 # -------------------------------
 
-api_key = st.secrets("GOOGLE_API_KEY")
+api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
     st.error(
@@ -37,7 +48,6 @@ llm = ChatGoogleGenerativeAI(
 # Chat History
 # -------------------------------
 
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -46,71 +56,68 @@ if "messages" not in st.session_state:
 # UI
 # -------------------------------
 with st.sidebar:
-   st.title("FANUC AI")
-   st.divider()
-   st.success("Knowledge Base Loaded")
+    st.title("FANUC AI")
+    st.divider()
+    st.success("Knowledge Base Loaded")
 
-   st.write("FANUC Parameter Manual")
+    st.write("FANUC Parameter Manual")
 
-   st.divider()
+    st.divider()
 
-   st.subheader("System Information")
+    st.subheader("System Information")
 
-   st.write("Embedding Model")
-   st.caption("BAAI/bge-base-en-v1.5")
+    st.write("Embedding Model")
+    st.caption("BAAI/bge-base-en-v1.5")
 
-   st.write("Retriever")
-   st.caption("Hybrid (Vector + MB25)")
+    st.write("Retriever")
+    st.caption("Hybrid (Vector + BM25)")
 
-   st.write("Reranker")
-   st.caption("BAAI/bge-reranker-base")
+    st.write("Reranker")
+    st.caption("BAAI/bge-reranker-base")
 
-   st.write("LLM")
-   st.caption("Gemini 2.5 Flash")
+    st.write("LLM")
+    st.caption("Gemini 2.5 Flash")
 
 
 st.title("FANUC AI Assistant")
 st.caption("Industrial CNC Knowledge Assistant")
 
 
-#----------------------------------
+# ----------------------------------
 # DASHBOARD
-#----------------------------------
+# ----------------------------------
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-   st.metric(
-      label="📑Pages",
-      value="766"
-   )
+    st.metric(label="📑Pages", value="766")
 with col2:
-   st.metric(
-      label="🧩Chunks",
-      value="2133"
-   )
-
+    st.metric(label="🧩Chunks", value="2133")
 with col3:
-   st.metric(
-      label="🤖LLM",
-      value="Gemini"
-    )   
-
+    st.metric(label="🤖LLM", value="Gemini")
 with col4:
-   st.metric(
-      label="🟢Status",
-      value="Ready"
-   )
-   
+    st.metric(label="🟢Status", value="Ready")
+
 
 # -------------------------------
 # Display Previous Messages
 # -------------------------------
 
 for message in st.session_state.messages:
-
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+
+
+# -------------------------------
+# Helper: turn LangChain stream into plain text chunks
+# -------------------------------
+
+def stream_text(stream):
+    """LangChain's llm.stream() yields AIMessageChunk objects, not raw
+    strings. st.write_stream needs plain strings, so unwrap .content here."""
+    for chunk in stream:
+        if chunk.content:
+            yield chunk.content
 
 
 # -------------------------------
@@ -131,9 +138,9 @@ if query:
     with st.chat_message("user"):
         st.markdown(query)
 
-   # -------------------------------
-# Retrieve Relevant Chunks using MMR
-# -------------------------------
+    # -------------------------------
+    # Retrieve Relevant Chunks using MMR
+    # -------------------------------
 
     documents = retrieve_documents(query)
 
@@ -141,14 +148,10 @@ if query:
     source_pages = set()
 
     for doc in documents:
+        context += doc.page_content + "\n\n"
+        source_pages.add(doc.metadata["page"] + 1)
 
-      context += doc.page_content + "\n\n"
-
-      source_pages.add(
-        doc.metadata["page"] + 1
-    )
-    prompt = f"""
-    You are a helpful assistant.
+    prompt = f"""You are a helpful assistant.
 
 Answer ONLY from the provided context.
 
@@ -163,30 +166,30 @@ Question:
 {query}
 """
 
-    stream = llm.stream(prompt)
+    try:
+        stream = llm.stream(prompt)
 
-    with st.chat_message("assistant"):
-        response = st.write_stream(stream)
-        st.markdown("### 📄 Sources")
+        with st.chat_message("assistant"):
+            response = st.write_stream(stream_text(stream))
 
-        for page in sorted(source_pages):
+            if source_pages:
+                st.markdown("### 📄 Sources")
+                for page in sorted(source_pages):
+                    st.markdown(f"- Page {page}")
 
-         st.markdown(f"- Page {page}")
-
-    st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": response
-        }
-    )
-    with st.expander("📄 Retrieved Chunks"):
-
-      for i, doc in enumerate( documents, start=1):
-
-        st.markdown(
-            f"### Chunk {i} (Page {doc.metadata['page'] + 1})"
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": response
+            }
         )
 
-        st.write(doc.page_content)
+        if documents:
+            with st.expander("📄 Retrieved Chunks"):
+                for i, doc in enumerate(documents, start=1):
+                    st.markdown(f"### Chunk {i} (Page {doc.metadata['page'] + 1})")
+                    st.write(doc.page_content)
+                    st.divider()
 
-        st.divider()   
+    except Exception as e:
+        st.error(f"Something went wrong while generating a response: {e}")
