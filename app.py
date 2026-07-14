@@ -24,7 +24,7 @@ load_css()
 # Initialize Gemini
 # -------------------------------
 
-api_key = st.secrets.get("GOOGLE_API_KEY")
+api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
     st.error(
@@ -36,7 +36,6 @@ llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
     google_api_key=api_key
 )
-
 
 # -------------------------------
 # Chat History
@@ -112,8 +111,7 @@ def stream_text(stream):
     for chunk in stream:
         if chunk.content:
             yield chunk.content
-
-
+                      
 # -------------------------------
 # User Input
 # -------------------------------
@@ -159,7 +157,6 @@ Context:
 Question:
 {query}
 """
-
     try:
         stream = llm.stream(prompt)
 
@@ -184,6 +181,5 @@ Question:
                     st.markdown(f"### Chunk {i} (Page {doc.metadata['page'] + 1})")
                     st.write(doc.page_content)
                     st.divider()
-
     except Exception as e:
         st.error(f"Something went wrong while generating a response: {e}")

@@ -24,8 +24,8 @@ def create_vector_database():
         " ",
         ""
     ],
-    chunk_size=1500,
-    chunk_overlap=150
+    chunk_size=100,
+    chunk_overlap=20
  )
     chunks = splitter.split_documents(docs)
     # Save chunks for BM25

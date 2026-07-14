@@ -26,7 +26,7 @@ def load_reranker():
     )
 
 
-reranker = load_reranker()
+reranker = load_reranker() 
 
 
 # Connect to the existing Chroma database
@@ -85,10 +85,9 @@ def retrieve_documents(query):
         search_type = "mmr"
         search_kwargs = {
             "k": 8,
-            "fetch_k": 20,
+            "fetch_k": 20, 
             "lambda_mult": 0.7
         }
-
     retriever = vector_db.as_retriever(
         search_type=search_type,
         search_kwargs=search_kwargs
@@ -109,9 +108,9 @@ def retrieve_documents(query):
     scores = bm25.get_scores(query_tokens)
 
     top_indices = sorted(
-        range(len(scores)),
+      range(len(scores)),
         key=lambda i: scores[i],
-        reverse=True
+     reverse=True
     )[:8]
 
     bm25_documents = [
