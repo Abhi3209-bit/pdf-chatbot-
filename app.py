@@ -85,7 +85,7 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric(label="📑Pages", value="766")
 with col2:
-    st.metric(label="🧩Chunks", value="2133")
+    st.metric(label="🧩Chunks", value="21572")
 with col3:
     st.metric(label="🤖LLM", value="Gemini")
 with col4:
@@ -145,11 +145,37 @@ if query:
 
     prompt = f"""You are a helpful assistant.
 
-Answer ONLY from the provided context.
+You are an AI assistant specialized in FANUC CNC manuals.
 
-If the answer is not present in the context, say:
+Use the provided context as the primary source of information.
 
-'I couldn't find this information in the document.'
+If multiple retrieved chunks describe different parts of the same topic,
+combine them into one complete and coherent explanation.
+
+Do not simply repeat the retrieved text.
+Summarize and organize the information into a clear answer.
+- Combine information from multiple chunks when necessary.
+- Do not infer or assume facts that are not explicitly stated
+
+If some minor background explanation is needed to improve readability,
+you may use your general engineering knowledge.
+For parameter-related questions provide:
+
+• Parameter Number
+• Purpose
+• Function
+• Important Notes
+• Related Parameters (if available)
+
+However:
+
+- Never invent FANUC parameter values.
+- Never invent alarm codes.
+- Never contradict the provided document.
+- If the answer cannot be determined from the context,
+state that it was not found in the manual.
+
+Always explain in complete sentences rather than copying fragments.
 
 Context:
 {context}

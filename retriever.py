@@ -79,13 +79,13 @@ def retrieve_documents(query):
     if "parameter" in query.lower() or PARAMETER_PATTERN.search(query):
         search_type = "similarity"
         search_kwargs = {
-            "k": 8
+            "k": 25
         }
     else:
         search_type = "mmr"
         search_kwargs = {
-            "k": 8,
-            "fetch_k": 20, 
+            "k": 25,
+            "fetch_k": 60, 
             "lambda_mult": 0.7
         }
     retriever = vector_db.as_retriever(
@@ -111,7 +111,7 @@ def retrieve_documents(query):
       range(len(scores)),
         key=lambda i: scores[i],
      reverse=True
-    )[:8]
+    )[:20]
 
     bm25_documents = [
         all_chunks[i]
@@ -156,7 +156,8 @@ def retrieve_documents(query):
 
     top_documents = [
         doc
-        for score, doc in scored_docs[:4]
+        for score, doc in scored_docs[:15]
     ]
 
     return top_documents
+
