@@ -2,6 +2,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+from utils.constants import EMBEDDING_MODEL
+from utils.constants import PDF_PATH
 import pickle
 
 
@@ -9,7 +11,7 @@ def create_vector_database():
     print("Loading PDF...")
 
     # Load the PDF
-    loader = PyPDFLoader("fanuc.pdf")
+    loader = PyPDFLoader(PDF_PATH)
     docs = loader.load()
     
 
@@ -36,7 +38,7 @@ def create_vector_database():
 
     # Load the embedding model
     embeddings = HuggingFaceEmbeddings(
-        model_name="BAAI/bge-base-en-v1.5"
+        model_name=EMBEDDING_MODEL
     )
 
     print("Creating embeddings and saving to Chroma database...")
@@ -55,3 +57,12 @@ def create_vector_database():
 
 if __name__ == "__main__":
     create_vector_database()
+    
+    
+    
+    
+    
+    
+    
+    
+    

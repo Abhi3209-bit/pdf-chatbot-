@@ -65,6 +65,21 @@ all_chunks, bm25 = load_bm25()
 # (e.g. "parameter 3401", "No. 1815") rather than a general concept lookup.
 PARAMETER_PATTERN = re.compile(r"\b(no\.?\s?\d+|\d{3,4})\b", re.IGNORECASE)
 
+def get_index_stats():
+    """Returns real counts from the loaded index, for the dashboard."""
+    num_chunks = len(all_chunks)
+ 
+    pages_seen = {
+        doc.metadata.get("page")
+        for doc in all_chunks
+        if doc.metadata.get("page") is not None
+    }
+    num_pages = max(pages_seen) + 1 if pages_seen else 0
+ 
+    return {
+        "pages": num_pages,
+        "chunks": num_chunks
+    }
 
 def retrieve_documents(query):
     """
