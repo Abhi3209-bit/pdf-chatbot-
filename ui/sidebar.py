@@ -43,7 +43,10 @@ def render_sidebar():
 
             if recent:
 
-                st.markdown("**Recent Questions**")
+                st.markdown(
+                        '<div class="recent-questions-title">Recent Questions</div>',
+                        unsafe_allow_html=True,
+                    )
 
                 for item in recent:
 
@@ -56,3 +59,6 @@ def render_sidebar():
             else:
 
                 st.caption("No questions asked yet.")
+                st.divider()
+                st.subheader("🧠 Entity Memory")
+                st.write(st.session_state.entity_memory)

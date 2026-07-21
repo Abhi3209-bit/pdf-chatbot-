@@ -1,5 +1,5 @@
 import streamlit as st
-
+from services.entity_memory import initialize_entity_memory
 
 def initialize_session():
 
@@ -14,3 +14,5 @@ def initialize_session():
     
     if "pdf_zoom" not in st.session_state:
         st.session_state.pdf_zoom = 1.0
+        
+        initialize_entity_memory()

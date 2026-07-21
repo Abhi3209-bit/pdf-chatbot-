@@ -1,3 +1,4 @@
+
 import streamlit as st
 
 from retriever import retrieve_documents
@@ -6,66 +7,14 @@ from utils.stream import stream_text
 
 from services.prompt import build_prompt
 from services.memory import rewrite_query
-
-
-# ==========================================================
-# DISPLAY SOURCE BUTTONS
-# ==========================================================
-
-def display_sources(source_pages, message_index):
-
-    if not source_pages:
-        return
-
-    st.markdown("### 📄 Sources")
-
-    for page in sorted(source_pages):
-
-        if st.button(
-            f"📄 Page {page}",
-            key=f"page_{message_index}_{page}",
-            use_container_width=True,
-        ):
-
-            st.session_state.selected_page = page
-            st.session_state.viewer_open = True
-            st.rerun()
-
-
-# ==========================================================
-# DISPLAY RETRIEVED CHUNKS
-# ==========================================================
-
-def display_chunks(documents):
-
-    if not documents:
-        return
-
-    with st.expander("📄 Retrieved Chunks"):
-
-        for i, doc in enumerate(documents, start=1):
-
-            page = doc.metadata.get("page")
-
-            if page is None:
-                page_text = "Unknown"
-            else:
-                page_text = page + 1
-
-            st.markdown(
-                f"### Chunk {i} (Page {page_text})"
-            )
-
-            st.write(doc.page_content)
-
-            st.divider()
-
+from services.entity_memory import update_entity_memory
 
 # ==========================================================
 # DISPLAY COMPLETE CHAT HISTORY
 # ==========================================================
 
 def display_chat_history():
+    
 
     for index, message in enumerate(st.session_state.messages):
 
@@ -101,10 +50,11 @@ def display_chat_history():
                         else:
                             page_text = page + 1
 
+                        content_type = chunk.get("content_type", "text")
+                        label = "📊 Table" if content_type == "table" else "📄 Text"
                         st.markdown(
-                            f"### Chunk {i} (Page {page_text})"
+                            f"### Chunk {i} (Page {page_text}) — {label}"
                         )
-
                         st.write(chunk["text"])
 
                         st.divider()
@@ -129,7 +79,7 @@ def process_query(llm, query):
     )
 
     log_query(query)
-
+    update_entity_memory(query)
     # -------------------------------
     # Rewrite Query Using Memory
     # -------------------------------
@@ -188,12 +138,12 @@ def process_query(llm, query):
         )
 
         display_sources(
-            source_pages,
-            len(st.session_state.messages)
-        )
+                source_pages,
+                len(st.session_state.messages)
+            )
 
         display_chunks(
-            documents
+                documents
         )
 
     # -------------------------------
@@ -207,6 +157,7 @@ def process_query(llm, query):
         {
             "page": doc.metadata.get("page"),
             "text": doc.page_content,
+            "content_type": doc.metadata.get("content_type", "text"),
         }
     )
 
@@ -218,11 +169,64 @@ def process_query(llm, query):
             "role": "assistant",
             "content": response,
             "sources": list(source_pages),
-            "documents": documents,
+            "chunks": chunks,
             "rewritten_query": rewritten_query,
         }
     )
 
+# ==========================================================
+# DISPLAY SOURCE BUTTONS
+# ==========================================================
+
+def display_sources(source_pages, message_index):
+
+    if not source_pages:
+        return
+
+    st.markdown("### 📄 Sources")
+
+    for page in sorted(source_pages):
+
+        if st.button(
+            f"📄 Page {page}",
+            key=f"page_{message_index}_{page}",
+            use_container_width=True,
+        ):
+
+            st.session_state.selected_page = page
+            st.session_state.viewer_open = True
+            st.rerun()
+
+# ==========================================================
+# DISPLAY RETRIEVED CHUNKS
+# ==========================================================
+
+def display_chunks(documents):
+
+    if not documents:
+        return
+
+    with st.expander("📄 Retrieved Chunks"):
+
+        for i, doc in enumerate(documents, start=1):
+
+            page = doc.metadata.get("page")
+
+            if page is None:
+                page_text = "Unknown"
+            else:
+                page_text = page + 1
+
+            content_type = doc.metadata.get("content_type", "text")
+            label = "📊 Table" if content_type == "table" else "📄 Text"
+
+            st.markdown(
+                    f"### Chunk {i} (Page {page_text}) — {label}"
+                )
+
+            st.write(doc.page_content)
+
+            st.divider()
 
 # ==========================================================
 # MAIN CHAT
@@ -235,14 +239,13 @@ def render_chat(llm):
     # -------------------------------
 
     display_chat_history()
+    query = st.chat_input(
+            "Ask your question..."
+        )
 
     # -------------------------------
     # Chat Input
     # -------------------------------
-
-    query = st.chat_input(
-        "Ask your question..."
-    )
 
     if not query:
         return

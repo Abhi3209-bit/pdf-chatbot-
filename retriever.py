@@ -64,6 +64,10 @@ all_chunks, bm25 = load_bm25()
 # Query patterns that suggest the user wants a specific parameter number
 # (e.g. "parameter 3401", "No. 1815") rather than a general concept lookup.
 PARAMETER_PATTERN = re.compile(r"\b(no\.?\s?\d+|\d{3,4})\b", re.IGNORECASE)
+TABLE_QUERY_PATTERN = re.compile(
+    r"\b(table|list|alarm|code|setting|value|range|specification)\b",
+    re.IGNORECASE,
+)
 
 def get_index_stats():
     """Returns real counts from the loaded index, for the dashboard."""
@@ -164,15 +168,23 @@ def retrieve_documents(query):
 
     scored_docs = list(zip(scores, documents))
 
-    scored_docs.sort(
+    # Boost table chunks when the query looks table-related
+    boosted_docs = []
+    for score, doc in scored_docs:
+        bonus = 0.0
+        if doc.metadata.get("content_type") == "table":
+            if TABLE_QUERY_PATTERN.search(query) or PARAMETER_PATTERN.search(query):
+                bonus = 0.15
+        boosted_docs.append((score + bonus, doc))
+
+    boosted_docs.sort(
         key=lambda x: x[0],
         reverse=True
     )
 
     top_documents = [
         doc
-        for score, doc in scored_docs[:15]
+        for score, doc in boosted_docs[:15]
     ]
-
     return top_documents
 

@@ -32,7 +32,11 @@ For parameter-related questions provide:
 • Related Parameters (if available)
 
 However:
+When the context contains a Markdown table (rows starting with |):
 
+- Preserve exact parameter numbers, values, and alarm codes from the table.
+- Explain the table clearly; you may reformat it as a list or table in your answer.
+- Do not merge unrelated rows or invent missing cells.
 - Never invent FANUC parameter values.
 - Never invent alarm codes.
 - Never contradict the provided document.

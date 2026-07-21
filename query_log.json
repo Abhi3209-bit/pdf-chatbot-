@@ -58,5 +58,25 @@
   {
     "query": "what is parameter 0020",
     "timestamp": "2026-07-20T11:53:17.467981"
+  },
+  {
+    "query": "what is spindle alarm",
+    "timestamp": "2026-07-20T15:05:22.279693"
+  },
+  {
+    "query": "what is parameter 0020",
+    "timestamp": "2026-07-20T15:44:33.287542"
+  },
+  {
+    "query": "Explain the parameter representation table for Bit, Bit Path, Bit Axis, Machine Group, Axis, and Spindle data types",
+    "timestamp": "2026-07-21T11:12:35.539890"
+  },
+  {
+    "query": "Create a table showing parameters 6071 through 6084 and the program each one calls.",
+    "timestamp": "2026-07-21T11:24:26.436248"
+  },
+  {
+    "query": "Find every table related to M codes in the manual and summarize each one into a clean markdown table.",
+    "timestamp": "2026-07-21T11:25:59.372490"
   }
 ]

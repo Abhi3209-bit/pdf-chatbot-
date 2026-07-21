@@ -52,3 +52,18 @@ section[data-testid="stSidebar"] * {
     border: 1px solid #e5e7eb;
     border-radius: 8px;
 }
+/* Sidebar expander title */
+
+section[data-testid="stSidebar"] details summary p {
+    color: #4CAF50 !important;
+    font-weight: bold;
+}
+.recent-questions-title {
+    color: #00BCD4;      /* Text color */
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+section[data-testid="stSidebar"] .stMarkdown p {
+    color: #00BCD4;
+}
